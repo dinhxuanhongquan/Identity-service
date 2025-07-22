@@ -1,75 +1,74 @@
 package com.example.identity_service.service;
 
-import com.example.identity_service.dto.request.UserCreationRequest;
-import com.example.identity_service.dto.request.UserUpdateRequest;
-import com.example.identity_service.dto.response.UserResponse;
-import com.example.identity_service.entity.User;
-import com.example.identity_service.enums.Role;
-import com.example.identity_service.exception.AppException;
-import com.example.identity_service.exception.ErrorCode;
-import com.example.identity_service.mapper.UserMapper;
-import com.example.identity_service.repository.RoleRepository;
-import com.example.identity_service.repository.UserRepository;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
+import java.util.HashSet;
+import java.util.List;
+
+import com.example.identity_service.constant.PredefinedRole;
+import com.example.identity_service.entity.Role;
+import com.example.identity_service.mapper.RoleMapper;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
+import com.example.identity_service.dto.request.UserCreationRequest;
+import com.example.identity_service.dto.request.UserUpdateRequest;
+import com.example.identity_service.dto.response.UserResponse;
+import com.example.identity_service.entity.User;
+import com.example.identity_service.exception.AppException;
+import com.example.identity_service.exception.ErrorCode;
+import com.example.identity_service.mapper.UserMapper;
+import com.example.identity_service.repository.RoleRepository;
+import com.example.identity_service.repository.UserRepository;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Service
 @Slf4j
 public class UserService {
-     UserRepository userRepository;
-     RoleRepository roleRepository;
-     UserMapper userMapper;
-     PasswordEncoder passwordEncoder;
+    private final RoleMapper roleMapper;
+    UserRepository userRepository;
+    RoleRepository roleRepository;
+    UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     // Add new a User
-    public User createUser(UserCreationRequest request) {
-
-        // check username.
-        if(userRepository.existsByUsername(request.getUsername()))
-            throw new AppException(ErrorCode.USER_EXISTED);
-
-        // Mapper all fields from request to user.
+    public UserResponse createUser(UserCreationRequest request) {
         User user = userMapper.toUser(request);
-        // Hash Password
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        HashSet<String> roles = new HashSet<>();
-        roles.add(Role.USER.name());
+        HashSet<Role> roles = new HashSet<>();
+        roleRepository.findById(PredefinedRole.USER_ROLE).ifPresent(roles::add);
 
-       // user.setRoles(roles);
+        user.setRoles(roles);
 
-        return userRepository.save(user);
+        try{
+            user = userRepository.save(user);
+        }catch (DataIntegrityViolationException exception){
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
 
-    }
-
-    //get info of user
-    public UserResponse getMyinfo(){
-        var context = SecurityContextHolder.getContext();
-        String name = context.getAuthentication().getName();
-
-        User user = userRepository.findByUsername(name).orElseThrow(() ->
-                new AppException(ErrorCode.USER_NOT_FOUND));
         return userMapper.toUserResponse(user);
     }
 
-    // Get all Users
-//    public List<User> getAllUsers() {
-//        return userRepository.findAll();
-//    }
+    // get info of user
+    public UserResponse getMyInformation() {
 
-//    @PreAuthorize("hasAuthority('DELETE_ADD')")
+        var context = SecurityContextHolder.getContext();
+        String name = context.getAuthentication().getName();
+
+        User user = userRepository.findByUsername(name).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+        return userMapper.toUserResponse(user);
+    }
+
+    //    @PreAuthorize("hasAuthority('DELETE_ADD')")
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponse> getUsers() {
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
@@ -77,16 +76,16 @@ public class UserService {
 
     @PostAuthorize("returnObject.username = authentication.name ")
     // Get User by UserId
-    public UserResponse getUserById(String userId){
+    public UserResponse getUserById(String userId) {
         /* If found, return User. if not found --> print "User not found" */
-        return userMapper.toUserResponse(userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
+        return userMapper.toUserResponse(
+                userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
     }
 
     // Update Information of User by USerId
-    public UserResponse updateUser(String userId, UserUpdateRequest request){
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    @PostAuthorize("returnObject.username == authentication.name")
+    public UserResponse updateUser(String userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
         userMapper.updateUser(user, request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -98,7 +97,8 @@ public class UserService {
     }
 
     // Delete User by UserId
-    public void deleteUser(String userId){
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }
 }

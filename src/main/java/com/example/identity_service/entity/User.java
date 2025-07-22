@@ -1,14 +1,15 @@
 package com.example.identity_service.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 import java.util.Set;
 
+import jakarta.persistence.*;
 
-@Data
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Getter 
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,13 +17,16 @@ import java.util.Set;
 @Entity
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)// Dinh nghia cho Id la cac chuoi ngau nhien
+    @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
+    @Column(name = "username", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
     String username;
+
     String password;
     String firstName;
-    String lastName;
     LocalDate dob;
+    String lastName;
 
     @ManyToMany
     Set<Role> roles;

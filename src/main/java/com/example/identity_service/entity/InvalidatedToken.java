@@ -1,14 +1,15 @@
 package com.example.identity_service.entity;
 
+import java.util.Date;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.Date;
-
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,5 +18,6 @@ import java.util.Date;
 public class InvalidatedToken {
     @Id
     String id;
+
     Date expiryTime;
 }
