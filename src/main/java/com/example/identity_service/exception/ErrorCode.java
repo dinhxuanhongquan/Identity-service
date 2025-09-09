@@ -16,6 +16,12 @@ public enum ErrorCode {
     UNAUTHENTICATED(1006, "Unauthenticated", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1007, "You do not have permission", HttpStatus.FORBIDDEN),
     INVALID_DOB(1008, "Your age must be at least {min}", HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTED(1009, "Email already existed", HttpStatus.BAD_REQUEST),
+    USER_NOT_VERIFIED(1010, "User not verified", HttpStatus.BAD_REQUEST),
+    INVALID_VERIFICATION_CODE(1011, "Invalid verification code", HttpStatus.BAD_REQUEST),
+    VERIFICATION_CODE_EXPIRED(1012, "Verification code expired", HttpStatus.BAD_REQUEST),
+    INVALID_OLD_PASSWORD(1013, "Invalid old password", HttpStatus.BAD_REQUEST),
+    NEW_PASSWORD_SAME_AS_OLD(1014, "New password cannot be the same as old password", HttpStatus.BAD_REQUEST),
 
     ;
 

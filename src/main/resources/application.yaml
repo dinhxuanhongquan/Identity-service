@@ -5,19 +5,43 @@ server:
 
 spring:
   datasource:
-    url: ${DBMS_CONNECTION:jdbc:mysql://localhost:3306/identity-service}
+    url: ${DBMS_CONNECTION:jdbc:mysql://localhost:3306/identity_service_01}
     username: ${DBMS_USERNAME:root}
     password: ${DBMS_PASSWORD:090203Qu@n}
     driverClassName: "com.mysql.cj.jdbc.Driver"
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:quandinh.09022003@gmail.com}
+    password: rkhy dsrm znwu xjda
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+        socketFactory:
+          class: javax.net.ssl.SSLSocketFactory
+          fallback: false
+          port: 587
+        ssl:
+          trust: smtp.gmail.com
 
 jwt:
   signerKey: "cnK4l5lXAr5UxnxGERFSPJBhlnBw+piih4Mx8INjrEYbMvOm3zQiiqyDsnsq5MqJ"
   valid-duration: 3600 #in seconds.
   refreshable-duration: 36000 #in seconds.
+
+mail:
+  host: smtp.gmail.com
+  port: 587
+  username: ${MAIL_USERNAME:quandinh.09022003@gmail.com}
+  password: rkhy dsrm znwu xjda
 
 
 

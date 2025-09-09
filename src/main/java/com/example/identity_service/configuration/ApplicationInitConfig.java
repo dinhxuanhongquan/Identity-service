@@ -29,10 +29,10 @@ public class ApplicationInitConfig {
     PasswordEncoder passwordEncoder;
 
     @NonFinal
-    static final String ADMIN_USER_NAME = "admin";
+    static final String ADMIN_USER_NAME = "admin1234";
 
     @NonFinal
-    static final String ADMIN_PASSWORD = "admin";
+    static final String ADMIN_PASSWORD = "admin1234";
 
     @Bean
     @ConditionalOnProperty(
@@ -59,6 +59,11 @@ public class ApplicationInitConfig {
                 User user = User.builder()
                         .username(ADMIN_USER_NAME)
                         .password(passwordEncoder.encode(ADMIN_PASSWORD))
+                        .email("dxhq09022003@gmail.com")
+                        .firstName("HONG")
+                        .lastName("QUAN")
+                        .dob(java.time.LocalDate.of(2003, 2, 9))
+                        .isVerified(true)
                         .roles(roles)
                         .build();
 
